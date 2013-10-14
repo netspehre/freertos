@@ -1,3 +1,7 @@
+/*All IO infrastructures are from zzz0072*/
+/*Thank and respect his effort.*/
+
+#define configUSE_TRACE_FACILITY
 #define USE_STDPERIPH_DRIVER
 #include "stm32f10x.h"
 #include "stm32_p103.h"
@@ -97,6 +101,95 @@ char receive_byte()
     return msg.ch;
 }
 
+void SleepingDemo()
+{
+	while (1);
+}
+
+
+void MyShell()
+{
+    char ch;
+    char str[100];
+    int curr_char;
+    int done;
+    char PsInfo[256];
+    while (1)
+    {
+	/*gather commamd char by char*/
+        printf("\r\nMyShell>>");
+        curr_char = 0;
+        done = 0;
+        do
+        {
+            fio_read(0, &ch, 1);
+ 
+            if (curr_char >= 98 || (ch == '\r') || (ch == '\n'))
+            {
+                str[curr_char] = '\0';
+                done = -1;
+            }
+            else if (ch == 127)
+            {
+                if (curr_char>0)
+                {
+                    printf("\b \b");
+                    curr_char--;
+                }
+            }
+            else
+            {
+                str[curr_char++] = ch;
+                printf("%c",ch);
+ 
+            }
+        }while (!done);
+ 
+	/*select the proper one to execute*/
+        if (0==strcmp("Hello",str))
+        {
+            printf("nice to meet you");
+        }
+        else if (0==strcmp("ps",str))
+        {
+	    /*still very rough*/
+	    /*probably need to modify vTaskList() for better info*/
+            vTaskList(PsInfo);
+            printf("%s",PsInfo);
+        }
+        else if (0==strncmp("echo",str,4))
+        {
+            printf("\r\n%s", str+5);
+        }
+        else if (0==strncmp("system",str,6))
+        {
+            host_system(str+7,curr_char-7);
+        }
+        else if (0==strcmp("exe",str))
+        {
+            xTaskCreate(SleepingDemo,(signed portCHAR *) "SleepingDemo",512 /* stack size */, NULL,0, NULL);
+        }
+        else if (0==strcmp("help",str))
+        {
+            printf("\r\nThis is a very simple shell.");
+            printf("\r\nThere are only 6 commands.");
+            printf("\r\nhello - shows a welcome message.");
+            printf("\r\necho  - shows a message you type after \'echo\' command.");
+            printf("\r\nps    - shows all running tasks.");
+            printf("\r\nexe   - add a task doing nothing but sleeping for the ");
+            printf("purpose of demostrating.");
+	    printf("\r\nsystem- execute the command on the host");
+            printf("\r\nhelp  - the place where you are");
+        }
+        else
+        {
+            printf("\r\ncommand not supported");
+            printf("\r\nType \"help\" to see further info.");
+        }
+    }
+}
+ 
+
 int main()
 {
     init_rs232();
@@ -113,17 +206,9 @@ int main()
     vSemaphoreCreateBinary(serial_tx_wait_sem);
     serial_rx_queue = xQueueCreate(1, sizeof(serial_ch_msg));
 
-    #ifdef RT_TEST
-    /* Create a unit test task */
-    xTaskCreate(unit_test_task,
-                (signed portCHAR *) "Unit Tests",
-                512 /* stack size */, NULL, tskIDLE_PRIORITY + 2, NULL);
-    #endif /* RT_TEST */
 
     /* Create shell task */
-    xTaskCreate(shell_task,
-                (signed portCHAR *) "Shell",
-                512 /* stack size */, NULL, tskIDLE_PRIORITY + 2, NULL);
+    xTaskCreate(MyShell,(signed portCHAR *) "My Shell",512 /* stack size */, NULL, tskIDLE_PRIORITY + 1, NULL);
 
     /* Start running the tasks. */
     vTaskStartScheduler();
