@@ -1,1 +1,3 @@
-A FreeRTOS distribution for STM32-P103 with customized features
+porting my shell from lab19 to freeRTOS based on zzz0072's modification.
+
+There are still many place needed to be fixed, especially for the 'ps' commamd.
