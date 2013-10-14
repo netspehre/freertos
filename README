@@ -1,3 +1,7 @@
 porting my shell from lab19 to freeRTOS based on zzz0072's modification.
 
+Thank and respect zzz0072's effort.
+
 There are still many place needed to be fixed, especially for the 'ps' commamd.
+
+
