@@ -1,7 +1,8 @@
-
 /* It seems there is a malloc-like function in freeRTOS.*/
 /* Therefore, I use it instead of the static array      */
 /* and Hopefully people will always remember to free.   */
+
+/* trying to port the lab22 hack-malloc for this.       */
 
 char* itoa_base(int val, int base)
 {
