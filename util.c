@@ -1,8 +1,11 @@
 
-/* FIXME: There are re-entry issus */
+/* It seems there is a malloc-like function in freeRTOS.*/
+/* Therefore, I use it instead of the static array      */
+/* and Hopefully people will always remember to free.   */
+
 char* itoa_base(int val, int base)
 {
-    static char buf[32] = { 0 };
+    char * buf=(char *)pvPortMalloc(32);
     char has_minus = 0;
     int i = 30;
 
