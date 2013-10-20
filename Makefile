@@ -32,7 +32,7 @@ FREERTOS_SRC =  \
 		$(FREERTOS_SRC_DIR)/queue.c \
 		$(FREERTOS_SRC_DIR)/tasks.c \
 		$(FREERTOS_SRC_DIR)/portable/GCC/ARM_CM3/port.c \
-		$(FREERTOS_SRC_DIR)/portable/MemMang/heap_1.c
+		./heap_ww.c
 
 SRCS= \
 		$(CMSIS_SRCS)   \
@@ -47,7 +47,8 @@ SRCS= \
 		string.c        \
 		util.c          \
 		main.c         \
-		shell.c
+		shell.c         \
+		tryit.c        \
 
 INCS= \
 		-I. -I$(FREERTOS_INC) -I$(FREERTOS_PORT_INC) \
