@@ -34,7 +34,6 @@ volatile xQueueHandle serial_rx_queue = NULL;
 typedef struct {
     char ch;
 } serial_ch_msg;
-
 /* IRQ handler to handle USART2 interruptss (both transmit and receive
  * interrupts). */
 void USART2_IRQHandler()
@@ -146,9 +145,14 @@ void MyShell()
         }while (!done);
  
 	/*select the proper one to execute*/
-        if (0==strcmp("Hello",str))
+        if (0==strcmp("hello",str))
         {
             printf("nice to meet you");
+	    
+        }
+        else if (0==strcmp("mmtest",str))
+        {
+            mmtest();
         }
         else if (0==strcmp("ps",str))
         {
