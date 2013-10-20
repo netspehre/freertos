@@ -2,6 +2,12 @@ porting my shell from lab19 to freeRTOS based on zzz0072's modification.
 
 Thank and respect zzz0072's effort.
 
-There are still many places needed to be fixed, especially for the 'ps' commamd.
+There are still many places needed to be fixed, 
+
+  the 'ps' commamd only displays process name and rest info is unmeaningful.
+  
+  the 'mmtest' command will output redundant characters after the first 'vPortFree()' is called.
+  
+  After running an uncertain period of time, 'mmtest' has chance not to function properly. 
 
 
