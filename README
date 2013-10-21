@@ -2,12 +2,11 @@ porting my shell from lab19 to freeRTOS based on zzz0072's modification.
 
 Thank and respect zzz0072's effort.
 
-There are still many places needed to be fixed, 
+There are still many places needed to be fixed: 
 
-  the 'ps' commamd only displays process name and rest info is unmeaningful.
+  1.The 'ps' commamd only displays process name and rest info is unmeaningful.
   
-  the 'mmtest' command will output redundant characters after the first 'vPortFree()' is called.
-  
-  After running an uncertain period of time, 'mmtest' has chance not to function properly. 
+  2.I have tested lfsr example code from wiki and my assemblly prng(), they both have the same output sequence.
+    However, mmtest() still will appear the 'DBGPRINTF2("OUCH: u=%02X, v=%02X\n", u, v)' massage.
 
 
