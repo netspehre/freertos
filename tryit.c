@@ -20,7 +20,7 @@ struct slot {
 #define CIRCBUFSIZE 500
 unsigned int write_pointer, read_pointer;
 static struct slot slots[CIRCBUFSIZE];
-static unsigned int lfsr = 0xACE1;
+
 
 static unsigned int circbuf_size(void)
 {
@@ -48,25 +48,40 @@ static struct slot read_cb(void)
     foo = slots[read_pointer++];
     read_pointer %= CIRCBUFSIZE;
     return foo;
-}
-
-
+} 
 // Get a pseudorandom number generator from Wikipedia
-static int prng(void)
+static unsigned int lfsr = 0xace1;
+unsigned int bit;
+int prng(void)
 {
-    static unsigned int bit;
     /* taps: 16 14 13 11; characteristic polynomial: x^16 + x^14 + x^13 + x^11 + 1 */
+    //bit  = ((lfsr >> 0) ^ (lfsr >> 2) ^ (lfsr >> 3) ^ (lfsr >> 5) ) & 1;
+    __asm__("ldr r0,=bit");  //&bit
+    __asm__("ldr r1,=lfsr"); //&lfsr
+    __asm__("ldr r2,[r0]");   //bit
+    __asm__("ldr r3,[r1]");   //lfsr
+    __asm__("lsr r4,r3,#2");  //(lfsr >> 2)
+    __asm__("eor r5,r4,r3");  //(lfsr >> 0) ^ (lfsr >> 2)
+    __asm__("lsr r4,r3,#3");  //(lfsr >> 3)
+    __asm__("eor r5,r5,r4");  //^(lfsr >> 3)
+    __asm__("lsr r4,r3,#5");  //(lfsr >> 5)
+    __asm__("eor r5,r5,r4");  //^(lfsr >> 5)
+    __asm__("and r5,r5,#1");  //& 1
 
-    bit  = ((lfsr >> 0) ^ (lfsr >> 2) ^ (lfsr >> 3) ^ (lfsr >> 5) ) & 1;
-    lfsr =  (lfsr >> 1) | (bit << 15);
+    //lfsr =  (lfsr >> 1) | (bit << 15);
+    __asm__("lsr r4,r3,#1");  //(lfsr >> 1)
+    __asm__("lsl r6,r5,#15"); //(bit << 15)
+    __asm__("orr r0,r6,r4");  //(lfsr >> 1) | (bit << 15);
+    __asm__("str r0,[r1]");
+
     return lfsr & 0xffff;
 }
 
 int mmtest(void)
 {
     int i, size;
-    char *p,ch;
-
+    char *p;
+    char ch;
     while (1) {
         size = prng() & 0x7FF;
         DBGPRINTF1("try to allocate %d bytes\n", size);
@@ -80,8 +95,7 @@ int mmtest(void)
                 p = foo.pointer;
                 lfsr = foo.lfsr;  // reset the PRNG to its earlier state
                 size = foo.size;
-                printf("\rfree a block size %d \n", size);
-		
+                printf("free a block, size %d\n", size);
                 for (i = 0; i < size; i++) {
                     unsigned char u = p[i];
                     unsigned char v = (unsigned char) prng();
@@ -90,20 +104,17 @@ int mmtest(void)
                         return 1;
                     }
                 }
-		
                 vPortFree(p);
                 if ((prng() & 1) == 0) break;
             }
         } else {
-            printf("\rallocate a block, size %d\n", size);
+            printf("allocate a block, size %d\n", size);
             write_cb((struct slot){.pointer=p, .size=size, .lfsr=lfsr});
-	    
             for (i = 0; i < size; i++) {
                 p[i] = (unsigned char) prng();
             }
-	   
         }
-	fio_read(0, &ch, 1);
+        fio_read(0, &ch, 1);
     }
 
     return 0;
